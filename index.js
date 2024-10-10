@@ -5,42 +5,50 @@ import "dotenv/config";
 const usuario = process.env.USUARIO_PJN;
 const password = process.env.PASSWORD;
 
-// const saveExcel = async (data) => {
-//   try {
-//     const workbook = new ExcelJS.Workbook();
-//     const worksheet = workbook.addWorksheet("LinkedIn Links");
-
-//     worksheet.columns = [
-//       { header: "Name", key: "name", width: 30 },
-//       { header: "LinkedIn Link", key: "linkedinLink", width: 50 },
-//     ];
-
-//     data.forEach((item) => {
-//       worksheet.addRow({ name: item.name, linkedinLink: item.linkedinLink });
-//     });
-
-//     await workbook.xlsx.writeFile("linkedin_links6.xlsx");
-//     console.log("Excel file created successfully!");
-//   } catch (error) {
-//     console.log("Error writing Excel file:", error);
-//   }
-// };
-
 async function openBrowser() {
-  const browser = await puppeteer.launch({ headless: false }); // Configura headless en false para ver el navegador
-  const page = await browser.newPage();
-  await page.goto("https://deox.pjn.gov.ar/deox/inicio.do");
+  try {
+    const browser = await puppeteer.launch({ headless: false });
+    const page = await browser.newPage();
 
-  const usernameInput = await page.waitForSelector("#username"); // Cambia el selector por el que corresponda
-  console.log(usernameInput);
-  await page.type("#username", usuario);
-  await page.type("#password", password);
-  await page.goto("http://scw.pjn.gov.ar/scw/home.seam");
+    // Navegar a la página de inicio
+    await page.goto("https://deox.pjn.gov.ar/deox/inicio.do");
+    console.log("Navegando a la página de inicio...");
 
-  //   const loginButton = await page.waitForSelector("#kc-login"); // Cambia el selector por el que corresponda
-  //   await loginButton.click();
+    // Esperar el input de usuario y contraseña
+    const usernameInput = await page.waitForSelector("#username");
+    console.log("Input de usuario encontrado.");
+    await page.type("#username", usuario);
+    await page.type("#password", password);
+    console.log("Credenciales ingresadas.");
 
-  // Evaluar la página para extraer los enlaces
+    // Hacer clic en el botón de inicio de sesión
+    const loginButton = await page.waitForSelector("#kc-login");
+    await loginButton.click();
+    console.log("Botón de inicio de sesión clickeado.");
+
+    // Esperar a que la navegación a la página siguiente complete
+    await page.waitForNavigation({ waitUntil: "networkidle0" });
+    console.log("Navegación completada.");
+
+    // Abrir una nueva página
+    const page2 = await browser.newPage();
+    await page2.goto("http://scw.pjn.gov.ar/");
+    console.log("Navegando a la página secundaria...");
+
+    // Esperar el selector del dropdown y seleccionarlo
+    const selectSelector = "#formPublica\\:camaraNumAni"; // Selector del <select>
+    await page2.waitForSelector(selectSelector);
+    console.log("Selector del dropdown encontrado.");
+
+    await page2.select(selectSelector, "10");
+    console.log("Opción seleccionada en el dropdown: COM");
+    console.log(selectSelector);
+
+    // Cerrar el navegador (opcional)
+    // await browser.close();
+  } catch (error) {
+    console.log("Error:", error);
+  }
 }
 
 openBrowser();
