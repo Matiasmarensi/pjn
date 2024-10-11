@@ -1,5 +1,6 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-extra";
 import ExcelJS from "exceljs";
+import captcha from "puppeteer-extra-plugin-recaptcha";
 import "dotenv/config";
 
 const usuario = process.env.USUARIO_PJN;
@@ -7,6 +8,15 @@ const password = process.env.PASSWORD;
 
 async function openBrowser() {
   try {
+    puppeteer.use(
+      captcha({
+        provider: {
+          id: "2captcha",
+          token: "", // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
+        },
+        visualFeedback: true, // colorize reCAPTCHAs (violet = detected, green = solved)
+      })
+    );
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
@@ -32,10 +42,15 @@ async function openBrowser() {
 
     // Abrir una nueva página
     const page2 = await browser.newPage();
-    await page2.goto("http://scw.pjn.gov.ar/");
+    await page2.goto("http://scw.pjn.gov.ar/scw/consultaListaRelacionados.seam");
     console.log("Navegando a la página secundaria...");
 
     // Esperar el selector del dropdown y seleccionarlo
+    // await page.waitForSelector("#formPublica\\:recaptcha-publico\\:reCaptcha");
+    // let { captchas, filtered, error } = await page.findRecaptchas();
+    // console.log(captchas, filtered, error);
+    // const capt = await page.solveRecaptchas();
+    // console.log(capt);
     const selectSelector = "#formPublica\\:camaraNumAni"; // Selector del <select>
     await page2.waitForSelector(selectSelector);
     console.log("Selector del dropdown encontrado.");
@@ -50,28 +65,28 @@ async function openBrowser() {
     await inputAni.type("2023");
     //
     // si hay captcha
+    // si hay captcha
+    // const captchaSelector = "#formPublica\\:recaptcha-publico\\:reCaptcha"; // Selector del CAPTCHA
+    // const captchaExists = await page2.$(captchaSelector); // Verifica si el elemento existe
 
-    const captchaSelector = "#formPublica\\:recaptcha-publico\\:reCaptcha"; // Selector del CAPTCHA
-    const captchaExists = await page2.$(captchaSelector); // Verifica si el elemento existe
+    // if (captchaExists) {
+    //   console.log("Captcha encontrado. Por favor resuélvelo manualmente.");
+    //   // Espera 60 segundos para que el usuario resuelva el CAPTCHA
+    //   await new Promise((resolve) => setTimeout(resolve, 60000));
+    // } else {
+    //   console.log("Captcha no encontrado.");
+    // }
 
-    if (captchaExists) {
-      console.log("Captcha encontrado. Por favor resuélvelo manualmente.");
-      // Espera 60 segundos para que el usuario resuelva el CAPTCHA
-      await new Promise((resolve) => setTimeout(resolve, 60000));
-    } else {
-      console.log("Captcha no encontrado.");
-    }
-
-    // Esperar a que el usuario complete el CAPTCHA
-    console.log("Presiona Enter cuando hayas completado el CAPTCHA...");
-    await page2.evaluate(() => {
-      return new Promise((resolve) => {
-        const confirmation = confirm("¿Has completado el CAPTCHA?");
-        if (confirmation) {
-          resolve();
-        }
-      });
-    });
+    // // Esperar a que el usuario complete el CAPTCHA
+    // console.log("Presiona Enter cuando hayas completado el CAPTCHA...");
+    // await page2.evaluate(() => {
+    //   return new Promise((resolve) => {
+    //     const confirmation = confirm("¿Has completado el CAPTCHA?");
+    //     if (confirmation) {
+    //       resolve();
+    //     }
+    //   });
+    // });
     // Hacer clic en el botón de consultar
     const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton"; // Selector del botón
     const consultarButton = await page2.waitForSelector(consultarButtonSelector);
