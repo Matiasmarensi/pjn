@@ -43,14 +43,19 @@ async function openBrowser() {
     // Abrir una nueva página
     const page2 = await browser.newPage();
     await page2.goto("http://scw.pjn.gov.ar/scw/consultaListaRelacionados.seam");
-    console.log("Navegando a la página secundaria...");
+    const nuevaConsultaButton = await page2.waitForSelector("#j_idt24\\:menuNavigation\\:j_idt36\\:menuNuevaConsulta", {
+      visible: true,
+    });
 
-    // Esperar el selector del dropdown y seleccionarlo
-    // await page.waitForSelector("#formPublica\\:recaptcha-publico\\:reCaptcha");
-    // let { captchas, filtered, error } = await page.findRecaptchas();
-    // console.log(captchas, filtered, error);
-    // const capt = await page.solveRecaptchas();
-    // console.log(capt);
+    if (nuevaConsultaButton) {
+      console.log("NUEVA CONSULTA encontrada");
+      // Hacer clic y esperar a que la navegación termine
+      await nuevaConsultaButton.click();
+    } else {
+      console.log("No se encontró el botón de Nueva Consulta");
+    }
+
+    console.log("Navegando a la página secundaria...");
     const selectSelector = "#formPublica\\:camaraNumAni"; // Selector del <select>
     await page2.waitForSelector(selectSelector);
     console.log("Selector del dropdown encontrado.");
@@ -63,6 +68,29 @@ async function openBrowser() {
     await inputNum.type("1203");
     const inputAni = await page2.waitForSelector("#formPublica\\:anio");
     await inputAni.type("2023");
+    const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton"; // Selector del botón
+    const consultarButton = await page2.waitForSelector(consultarButtonSelector);
+    await consultarButton.click();
+    console.log("Botón de consulta clickeado.");
+
+    // Esperar el selector del dropdown y seleccionarlo
+    // await page.waitForSelector("#formPublica\\:recaptcha-publico\\:reCaptcha");
+    // let { captchas, filtered, error } = await page.findRecaptchas();
+    // console.log(captchas, filtered, error);
+    // // const capt = await page.solveRecaptchas();
+    // // console.log(capt);
+    // const selectSelector = "#formPublica\\:camaraNumAni"; // Selector del <select>
+    // await page2.waitForSelector(selectSelector);
+    // console.log("Selector del dropdown encontrado.");
+
+    // await page2.select(selectSelector, "10");
+    // console.log("Opción seleccionada en el dropdown: COM");
+    // console.log(selectSelector);
+    // const inputNum = await page2.waitForSelector("#formPublica\\:numero");
+    // console.log("Input de número encontrado.");
+    // await inputNum.type("1203");
+    // const inputAni = await page2.waitForSelector("#formPublica\\:anio");
+    // await inputAni.type("2023");
     //
     // si hay captcha
     // si hay captcha
@@ -88,10 +116,10 @@ async function openBrowser() {
     //   });
     // });
     // Hacer clic en el botón de consultar
-    const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton"; // Selector del botón
-    const consultarButton = await page2.waitForSelector(consultarButtonSelector);
-    await consultarButton.click();
-    console.log("Botón de consulta clickeado.");
+    // const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton"; // Selector del botón
+    // const consultarButton = await page2.waitForSelector(consultarButtonSelector);
+    // await consultarButton.click();
+    // console.log("Botón de consulta clickeado.");
   } catch (error) {
     console.log("Error:", error);
   }
