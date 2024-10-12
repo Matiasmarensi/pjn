@@ -6,17 +6,8 @@ import "dotenv/config";
 const usuario = process.env.USUARIO_PJN;
 const password = process.env.PASSWORD;
 
-async function openBrowser() {
+export default async function openBrowser(expediente, anio) {
   try {
-    puppeteer.use(
-      captcha({
-        provider: {
-          id: "2captcha",
-          token: "", // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
-        },
-        visualFeedback: true, // colorize reCAPTCHAs (violet = detected, green = solved)
-      })
-    );
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
@@ -65,9 +56,9 @@ async function openBrowser() {
     console.log(selectSelector);
     const inputNum = await page2.waitForSelector("#formPublica\\:numero");
     console.log("Input de número encontrado.");
-    await inputNum.type("1203");
+    await inputNum.type(expediente);
     const inputAni = await page2.waitForSelector("#formPublica\\:anio");
-    await inputAni.type("2023");
+    await inputAni.type(anio);
     const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton"; // Selector del botón
     const consultarButton = await page2.waitForSelector(consultarButtonSelector);
     await consultarButton.click();
@@ -124,5 +115,3 @@ async function openBrowser() {
     console.log("Error:", error);
   }
 }
-
-openBrowser();
