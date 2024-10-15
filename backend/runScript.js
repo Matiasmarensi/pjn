@@ -5,18 +5,20 @@ import express from "express";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { expediente, anio } = req.body;
+  const { data } = req.body;
+
+  console.log(data);
 
   // Validar que expediente y año están presentes en el body
-  if (!expediente || !anio) {
+  if (!data) {
     return res.status(400).json({ error: "Faltan parámetros: expediente o año." });
   }
 
   try {
     // Ejecutar Puppeteer con los datos proporcionados
-    const result = await openBrowser(expediente, anio);
-    console.log(result);
-    res.json({ message: "Script ejecutado correctamente", result });
+    const result = await openBrowser(data);
+
+    res.json(result);
   } catch (error) {
     console.error("Error ejecutando Puppeteer:", error);
     res.status(500).json({ error: "Error ejecutando el script de Puppeteer" });

@@ -1,3 +1,4 @@
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useState } from "react";
 import "./App.css";
 
@@ -5,21 +6,28 @@ function App() {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  console.log(result);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await fetch(`/run-search`, {
+      const response = await fetch(`http://localhost:3000/run`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ expedientes: inputValue.split(",") }),
+        body: JSON.stringify({ data: inputValue }),
       });
 
-      const data = await response.json();
+      // Verificar si la respuesta es válida y tiene contenido
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const text = await response.text(); // Leer la respuesta como texto
+      const data = text ? JSON.parse(text) : {}; // Solo parsear si no está vacía
       setResult(data);
     } catch (error) {
       console.error("Error en la búsqueda:", error);
@@ -29,65 +37,46 @@ function App() {
   };
 
   const formatInputValue = () => {
-    // Separar las líneas por comas
     const lines = inputValue
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line);
-    const formatted = lines.join(", ");
-    setInputValue(formatted); // Actualiza el textarea con el texto acomodado
-  };
-
-  const copyToClipboard = () => {
-    if (inputValue) {
-      navigator.clipboard
-        .writeText(inputValue)
-        .then(() => {
-          alert("Texto copiado al portapapeles!"); // Mensaje opcional
-        })
-        .catch((err) => {
-          console.error("Error al copiar: ", err);
-        });
-    }
+    const formatted = lines.join(",");
+    setInputValue(formatted);
   };
 
   return (
-    <div className="flex flex-col justify-center items-center bg-blue-900 h-screen">
-      <form className="flex flex-col gap-4 w-1/2" onSubmit={handleSubmit}>
-        <div className="flex gap-4">
-          {/* Input más grande para los expedientes con año */}
+    <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-light">
+      <form className="w-50" onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="expedientes" className="form-label text-dark  fs-4 underline">
+            Ingrese los expedientes:
+          </label>
+
           <textarea
-            className="bg-slate-200 p-4 rounded-md w-full h-48 text-lg resize-none"
-            type="text"
-            placeholder="Expedientes (Ej. 215/2022, 5821/2021)"
+            className="form-control p-3 text-dark"
+            id="expedientes"
+            rows="5"
+            placeholder="Ej. 215/2022, 5821/2021"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
           />
         </div>
-        <div className="flex gap-4">
-          <button
-            type="button"
-            onClick={formatInputValue}
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
-          >
+        <div className="d-flex justify-content-between">
+          <button type="button" onClick={formatInputValue} className="btn btn-outline-primary">
             Acomodar
           </button>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" type="submit">
+          <button type="submit" className="btn btn-success">
             Buscar
           </button>
         </div>
       </form>
-      {loading && <p>Cargando...</p>}
-      {result && <div>Resultado: {JSON.stringify(result)}</div>}
-
-      <div className="mt-4 text-lg text-white">
-        <button
-          onClick={copyToClipboard}
-          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full mt-2"
-        >
-          Copiar
-        </button>
-      </div>
+      {loading && <div className="mt-3 text-dark">Cargando...</div>}
+      {result && (
+        <div className="mt-3 text-dark">
+          <strong>Resultado:</strong> {JSON.stringify(result)}
+        </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,16 @@ import "dotenv/config";
 const usuario = process.env.USUARIO_PJN;
 const password = process.env.PASSWORD;
 
-export default async function openBrowser(expediente, anio) {
+export default async function openBrowser(data) {
+  //data es un arry con formato xxxx/yyyy
+  //ejemplo: ["2020/2021","2021/2022","2022/2023"]
+  //separado por comas
+  //separar numero y año
+  const expediente = data.split("/")[0];
+  const anio = data.split("/")[1];
+  console.log(expediente, anio);
+  if (!data) return;
+
   try {
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
