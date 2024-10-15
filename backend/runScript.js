@@ -5,7 +5,6 @@ import express from "express";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  console.log("hola");
   const { expediente, anio } = req.body;
 
   // Validar que expediente y año están presentes en el body
@@ -16,6 +15,7 @@ router.post("/", async (req, res) => {
   try {
     // Ejecutar Puppeteer con los datos proporcionados
     const result = await openBrowser(expediente, anio);
+    console.log(result);
     res.json({ message: "Script ejecutado correctamente", result });
   } catch (error) {
     console.error("Error ejecutando Puppeteer:", error);

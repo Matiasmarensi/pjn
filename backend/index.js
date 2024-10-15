@@ -63,54 +63,31 @@ export default async function openBrowser(expediente, anio) {
     const consultarButton = await page2.waitForSelector(consultarButtonSelector);
     await consultarButton.click();
     console.log("Botón de consulta clickeado.");
+    await page2.waitForSelector("#expediente\\:j_idt90\\:j_idt91");
+    const fieldsetData = await page2.evaluate(() => {
+      const expediente = document.querySelector("#expediente\\:j_idt90\\:j_idt91"); // Selección del fieldset por ID
 
-    // Esperar el selector del dropdown y seleccionarlo
-    // await page.waitForSelector("#formPublica\\:recaptcha-publico\\:reCaptcha");
-    // let { captchas, filtered, error } = await page.findRecaptchas();
-    // console.log(captchas, filtered, error);
-    // // const capt = await page.solveRecaptchas();
-    // // console.log(capt);
-    // const selectSelector = "#formPublica\\:camaraNumAni"; // Selector del <select>
-    // await page2.waitForSelector(selectSelector);
-    // console.log("Selector del dropdown encontrado.");
+      if (expediente) {
+        // Extraer los valores específicos
+        const expedienteValue = expediente.querySelector('span[style="color:#000000;"]').innerText.trim();
+        const jurisdiccion = expediente.querySelector("#expediente\\:j_idt90\\:detailCamera").innerText.trim();
+        const dependencia = expediente.querySelector("#expediente\\:j_idt90\\:detailDependencia").innerText.trim();
+        const situacionActual = expediente.querySelector("#expediente\\:j_idt90\\:detailSituation").innerText.trim();
+        const caratula = expediente.querySelector("#expediente\\:j_idt90\\:detailCover").innerText.trim();
 
-    // await page2.select(selectSelector, "10");
-    // console.log("Opción seleccionada en el dropdown: COM");
-    // console.log(selectSelector);
-    // const inputNum = await page2.waitForSelector("#formPublica\\:numero");
-    // console.log("Input de número encontrado.");
-    // await inputNum.type("1203");
-    // const inputAni = await page2.waitForSelector("#formPublica\\:anio");
-    // await inputAni.type("2023");
-    //
-    // si hay captcha
-    // si hay captcha
-    // const captchaSelector = "#formPublica\\:recaptcha-publico\\:reCaptcha"; // Selector del CAPTCHA
-    // const captchaExists = await page2.$(captchaSelector); // Verifica si el elemento existe
+        return {
+          expediente: expedienteValue,
+          jurisdiccion: jurisdiccion,
+          dependencia: dependencia,
+          situacionActual: situacionActual,
+          caratula: caratula,
+        };
+      }
 
-    // if (captchaExists) {
-    //   console.log("Captcha encontrado. Por favor resuélvelo manualmente.");
-    //   // Espera 60 segundos para que el usuario resuelva el CAPTCHA
-    //   await new Promise((resolve) => setTimeout(resolve, 60000));
-    // } else {
-    //   console.log("Captcha no encontrado.");
-    // }
-
-    // // Esperar a que el usuario complete el CAPTCHA
-    // console.log("Presiona Enter cuando hayas completado el CAPTCHA...");
-    // await page2.evaluate(() => {
-    //   return new Promise((resolve) => {
-    //     const confirmation = confirm("¿Has completado el CAPTCHA?");
-    //     if (confirmation) {
-    //       resolve();
-    //     }
-    //   });
-    // });
-    // Hacer clic en el botón de consultar
-    // const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton"; // Selector del botón
-    // const consultarButton = await page2.waitForSelector(consultarButtonSelector);
-    // await consultarButton.click();
-    // console.log("Botón de consulta clickeado.");
+      return null;
+    });
+    return fieldsetData;
+    console.log("Datos extraídos del fieldset:", fieldsetData);
   } catch (error) {
     console.log("Error:", error);
   }
