@@ -6,6 +6,7 @@ import express from "express";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  console.log(req.body);
   const { data } = req.body;
 
   console.log("body", data);
