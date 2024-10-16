@@ -7,14 +7,8 @@ const usuario = process.env.USUARIO_PJN;
 const password = process.env.PASSWORD;
 
 export default async function openBrowser(data) {
-  //data es un arry con formato xxxx/yyyy
-  //ejemplo: ["2020/2021","2021/2022","2022/2023"]
-  //separado por comas
-  //separar numero y año
-  const expediente = data.split("/")[0];
-  const anio = data.split("/")[1];
-  console.log(expediente, anio);
-  if (!data) return;
+  // Separar la data en múltiples expedientes en formato xxxx/yyyy
+  const expedientes = data.split(",").map((item) => item.trim()); // Elimina espacios extra alrededor de cada expediente
 
   try {
     const browser = await puppeteer.launch({ headless: false });
@@ -39,64 +33,102 @@ export default async function openBrowser(data) {
     // Esperar a que la navegación a la página siguiente complete
     await page.waitForNavigation({ waitUntil: "networkidle0" });
     console.log("Navegación completada.");
+    const resultados = [];
 
-    // Abrir una nueva página
-    const page2 = await browser.newPage();
-    await page2.goto("http://scw.pjn.gov.ar/scw/consultaListaRelacionados.seam");
-    const nuevaConsultaButton = await page2.waitForSelector("#j_idt24\\:menuNavigation\\:j_idt36\\:menuNuevaConsulta", {
-      visible: true,
-    });
+    // Procesar cada expediente en la lista
+    for (const item of expedientes) {
+      let datos = [];
+      await page.reload(); // Recarga la página actual
+      const page2 = await browser.newPage();
+      await page2.goto("http://scw.pjn.gov.ar/scw/consultaListaRelacionados.seam");
+      const [expediente, anio] = item.split("/").map((part) => part.trim());
+      console.log(`Procesando expediente: ${expediente}, año: ${anio}`);
 
-    if (nuevaConsultaButton) {
-      console.log("NUEVA CONSULTA encontrada");
-      // Hacer clic y esperar a que la navegación termine
-      await nuevaConsultaButton.click();
-    } else {
-      console.log("No se encontró el botón de Nueva Consulta");
-    }
-
-    console.log("Navegando a la página secundaria...");
-    const selectSelector = "#formPublica\\:camaraNumAni"; // Selector del <select>
-    await page2.waitForSelector(selectSelector);
-    console.log("Selector del dropdown encontrado.");
-
-    await page2.select(selectSelector, "10");
-    console.log("Opción seleccionada en el dropdown: COM");
-    console.log(selectSelector);
-    const inputNum = await page2.waitForSelector("#formPublica\\:numero");
-    console.log("Input de número encontrado.");
-    await inputNum.type(expediente);
-    const inputAni = await page2.waitForSelector("#formPublica\\:anio");
-    await inputAni.type(anio);
-    const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton"; // Selector del botón
-    const consultarButton = await page2.waitForSelector(consultarButtonSelector);
-    await consultarButton.click();
-    console.log("Botón de consulta clickeado.");
-    await page2.waitForSelector("#expediente\\:j_idt90\\:j_idt91");
-    const fieldsetData = await page2.evaluate(() => {
-      const expediente = document.querySelector("#expediente\\:j_idt90\\:j_idt91"); // Selección del fieldset por ID
-
-      if (expediente) {
-        // Extraer los valores específicos
-        const expedienteValue = expediente.querySelector('span[style="color:#000000;"]').innerText.trim();
-        const jurisdiccion = expediente.querySelector("#expediente\\:j_idt90\\:detailCamera").innerText.trim();
-        const dependencia = expediente.querySelector("#expediente\\:j_idt90\\:detailDependencia").innerText.trim();
-        const situacionActual = expediente.querySelector("#expediente\\:j_idt90\\:detailSituation").innerText.trim();
-        const caratula = expediente.querySelector("#expediente\\:j_idt90\\:detailCover").innerText.trim();
-
-        return {
-          expediente: expedienteValue,
-          jurisdiccion: jurisdiccion,
-          dependencia: dependencia,
-          situacionActual: situacionActual,
-          caratula: caratula,
-        };
+      if (!expediente || !anio) {
+        console.log("Error: formato de expediente inválido.");
+        continue;
       }
 
-      return null;
-    });
-    return fieldsetData;
-    console.log("Datos extraídos del fieldset:", fieldsetData);
+      // Seleccionar el botón de "Nueva Consulta" usando evaluate
+      const nuevaConsultaSelector = await page2.evaluate(() => {
+        const buttons = Array.from(document.querySelectorAll("a")); // Selecciona todos los elementos 'a'
+        const button = buttons.find((button) => button.textContent.includes("Nueva Consulta"));
+        if (button) {
+          return button.getAttribute("id"); // Devuelve el ID del botón
+        }
+        return null; // Si no lo encuentra, devuelve null
+      });
+
+      if (nuevaConsultaSelector) {
+        console.log("NUEVA CONSULTA encontrada");
+
+        // Escapamos los dos puntos en el selector
+        const escapedSelector = `#${nuevaConsultaSelector.replace(/:/g, "\\:")}`;
+        await page2.click(escapedSelector); // Usamos el selector escapado para hacer clic
+      } else {
+        console.log("No se encontró el botón de Nueva Consulta");
+      }
+
+      // Limpiar los inputs antes de la nueva consulta
+      // await page2.evaluate(() => {
+      //   document.querySelector("#formPublica\\:numero").value = "";
+      //   document.querySelector("#formPublica\\:anio").value = "";
+      // });
+
+      console.log("Inputs limpios, listos para la nueva consulta.");
+
+      // Seleccionar la cámara
+      const selectSelector = "#formPublica\\:camaraNumAni";
+      await page2.waitForSelector(selectSelector);
+      await page2.select(selectSelector, "10");
+      console.log("Opción seleccionada en el dropdown.");
+
+      // Ingresar el expediente y el año
+      const inputNum = await page2.waitForSelector("#formPublica\\:numero");
+      await inputNum.type(expediente);
+      console.log("Input de número ingresado.");
+
+      const inputAni = await page2.waitForSelector("#formPublica\\:anio");
+      await inputAni.type(anio);
+      console.log("Input de año ingresado.");
+
+      // Hacer clic en el botón de consulta
+      const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton";
+      const consultarButton = await page2.waitForSelector(consultarButtonSelector);
+      await consultarButton.click();
+      console.log("Botón de consulta clickeado.");
+
+      // Esperar los resultados
+      await page2.waitForSelector("#expediente\\:j_idt90\\:j_idt91");
+      const fieldsetData = await page2.evaluate(() => {
+        const expediente = document.querySelector("#expediente\\:j_idt90\\:j_idt91");
+        if (expediente) {
+          const expedienteValue = expediente.querySelector('span[style="color:#000000;"]').innerText.trim();
+          const jurisdiccion = expediente.querySelector("#expediente\\:j_idt90\\:detailCamera").innerText.trim();
+          const dependencia = expediente.querySelector("#expediente\\:j_idt90\\:detailDependencia").innerText.trim();
+          const situacionActual = expediente.querySelector("#expediente\\:j_idt90\\:detailSituation").innerText.trim();
+          const caratula = expediente.querySelector("#expediente\\:j_idt90\\:detailCover").innerText.trim();
+
+          return {
+            expediente: expedienteValue,
+            jurisdiccion,
+            dependencia,
+            situacionActual,
+            caratula,
+          };
+        }
+        return null;
+      });
+      if (fieldsetData) {
+        resultados.push(fieldsetData);
+      }
+
+      console.log("Datos extraídos del fieldset:", fieldsetData);
+    }
+    //retornar datos
+
+    await browser.close(); // Cerrar el navegador cuando se hayan procesado todos los expedientes
+    return resultados;
   } catch (error) {
     console.log("Error:", error);
   }

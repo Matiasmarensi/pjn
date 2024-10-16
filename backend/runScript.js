@@ -7,7 +7,7 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   const { data } = req.body;
 
-  console.log(data);
+  console.log("body", data);
 
   // Validar que expediente y año están presentes en el body
   if (!data) {
@@ -17,6 +17,7 @@ router.post("/", async (req, res) => {
   try {
     // Ejecutar Puppeteer con los datos proporcionados
     const result = await openBrowser(data);
+    console.log("result de runScript", result);
 
     res.json(result);
   } catch (error) {
