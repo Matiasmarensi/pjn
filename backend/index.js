@@ -11,7 +11,7 @@ export default async function openBrowser(data) {
   const expedientes = data.split(",").map((item) => item.trim()); // Elimina espacios extra alrededor de cada expediente
 
   try {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
     // Navegar a la página de inicio
@@ -103,11 +103,17 @@ export default async function openBrowser(data) {
       const fieldsetData = await page2.evaluate(() => {
         const expediente = document.querySelector("#expediente\\:j_idt90\\:j_idt91");
         if (expediente) {
-          const expedienteValue = expediente.querySelector('span[style="color:#000000;"]').innerText.trim();
-          const jurisdiccion = expediente.querySelector("#expediente\\:j_idt90\\:detailCamera").innerText.trim();
-          const dependencia = expediente.querySelector("#expediente\\:j_idt90\\:detailDependencia").innerText.trim();
-          const situacionActual = expediente.querySelector("#expediente\\:j_idt90\\:detailSituation").innerText.trim();
-          const caratula = expediente.querySelector("#expediente\\:j_idt90\\:detailCover").innerText.trim();
+          const expedienteValue = expediente.querySelector('span[style="color:#000000;"]')?.innerText?.trim() || "N/A";
+          const jurisdiccion =
+            expediente.querySelector("#expediente\\:j_idt90\\:detailCamera")?.innerText?.trim() || "N/A";
+          const dependencia =
+            expediente.querySelector("#expediente\\:j_idt90\\:detailDependencia")?.innerText?.trim() || "N/A";
+          const situacionActual =
+            expediente.querySelector("#expediente\\:j_idt90\\:detailSituation")?.innerText?.trim() || "N/A";
+          const caratula = expediente.querySelector("#expediente\\:j_idt90\\:detailCover")?.innerText?.trim() || "N/A";
+          const datosDeOrigen =
+            expediente.querySelector("#expediente\\:j_idt90\\:j_idt123\\:detailNumeracionOrigen")?.innerText?.trim() ||
+            "N/A";
 
           return {
             expediente: expedienteValue,
@@ -115,6 +121,7 @@ export default async function openBrowser(data) {
             dependencia,
             situacionActual,
             caratula,
+            datosDeOrigen,
           };
         }
         return null;
