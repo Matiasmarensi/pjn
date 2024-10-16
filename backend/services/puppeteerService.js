@@ -2,7 +2,7 @@ import puppeteer from "puppeteer-extra";
 import ExcelJS from "exceljs";
 import captcha from "puppeteer-extra-plugin-recaptcha";
 import "dotenv/config";
-import { saveExpedienteToDB } from "./saveExpedienteToDB.js";
+import { saveExpedienteToDB } from "../services/dbService.js";
 
 const usuario = process.env.USUARIO_PJN;
 const password = process.env.PASSWORD;
