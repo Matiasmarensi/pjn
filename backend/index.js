@@ -2,6 +2,7 @@ import puppeteer from "puppeteer-extra";
 import ExcelJS from "exceljs";
 import captcha from "puppeteer-extra-plugin-recaptcha";
 import "dotenv/config";
+import { saveExpedienteToDB } from "./saveExpedienteToDB.js";
 
 const usuario = process.env.USUARIO_PJN;
 const password = process.env.PASSWORD;
@@ -99,9 +100,15 @@ export default async function openBrowser(data) {
       console.log("Botón de consulta clickeado.");
 
       // Esperar los resultados
-      await page2.waitForSelector("#expediente\\:j_idt90\\:j_idt91");
+      try {
+        await page2.waitForSelector("#expediente\\:j_idt90\\:j_idt91", { timeout: 10000 }); // Espera 10 segundos
+      } catch (err) {
+        console.log(`El expediente ${expediente}/${anio} no se encontró.`);
+        continue; // Saltar al siguiente expediente
+      }
       const fieldsetData = await page2.evaluate(() => {
-        const expediente = document.querySelector("#expediente\\:j_idt90\\:j_idt91");
+        const expediente = document?.querySelector("#expediente\\:j_idt90\\:j_idt91");
+        if (!expediente) return null;
         if (expediente) {
           const expedienteValue = expediente.querySelector('span[style="color:#000000;"]')?.innerText?.trim() || "N/A";
           const jurisdiccion =
@@ -128,6 +135,8 @@ export default async function openBrowser(data) {
       });
       if (fieldsetData) {
         resultados.push(fieldsetData);
+
+        await saveExpedienteToDB(fieldsetData); // Guardar en la base de datos
       }
 
       console.log("Datos extraídos del fieldset:", fieldsetData);

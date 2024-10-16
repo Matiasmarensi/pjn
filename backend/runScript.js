@@ -1,3 +1,4 @@
+import { getAllExpedientes } from "./controllers/getAll.js";
 import openBrowser from "./index.js";
 import express from "express";
 
@@ -23,6 +24,21 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error("Error ejecutando Puppeteer:", error);
     res.status(500).json({ error: "Error ejecutando el script de Puppeteer" });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const expedientes = await getAllExpedientes();
+    console.log("expedientes", expedientes);
+
+    if (expedientes) {
+      res.status(200).json(expedientes);
+    } else {
+      res.status(404).json({ error: "No se encontraron expedientes" });
+    }
+  } catch (error) {
+    console.log(error);
   }
 });
 
