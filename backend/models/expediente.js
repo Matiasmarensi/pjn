@@ -25,7 +25,7 @@ const expedienteSchema = new mongoose.Schema(
       default: Date.now,
     },
     updatedAt: {
-      type: Date,
+      type: String,
       default: Date.now,
     },
   },

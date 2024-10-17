@@ -121,6 +121,11 @@ export default async function openBrowser(data) {
           const datosDeOrigen =
             expediente.querySelector("#expediente\\:j_idt90\\:j_idt123\\:detailNumeracionOrigen")?.innerText?.trim() ||
             "N/A";
+          const fecha = new Date();
+          const dia = String(fecha.getUTCDate()).padStart(2, "0");
+          const mes = String(fecha.getUTCMonth() + 1).padStart(2, "0");
+          const anio = fecha.getUTCFullYear();
+          const updatedAt = `${dia}/${mes}/${anio}`; // Formato dd/mm/aaaa
 
           return {
             expediente: expedienteValue,
@@ -129,6 +134,7 @@ export default async function openBrowser(data) {
             situacionActual,
             caratula,
             datosDeOrigen,
+            updatedAt: updatedAt || "N/A",
           };
         }
         return null;

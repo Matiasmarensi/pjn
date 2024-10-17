@@ -12,7 +12,7 @@ const SearchBar = ({ inputValue, setInputValue, handleSubmit, loading }) => {
   };
 
   return (
-    <div className="flex flex-col w-1/4 p-4">
+    <div className="flex flex-col w-1/8  p-4">
       <textarea
         className="bg-gray-300 p-4 rounded-md text-lg resize-none mb-4 h-72"
         placeholder="Expedientes (Ej. 215/2022, 5821/2021)"
