@@ -28,6 +28,7 @@ const expedienteSchema = new mongoose.Schema(
       type: String,
       default: Date.now,
     },
+    ultimoMovimiento: { type: String },
   },
   {
     timestamps: true,

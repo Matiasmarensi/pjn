@@ -121,6 +121,7 @@ export default async function openBrowser(data) {
           const datosDeOrigen =
             expediente.querySelector("#expediente\\:j_idt90\\:j_idt123\\:detailNumeracionOrigen")?.innerText?.trim() ||
             "N/A";
+
           const fecha = new Date();
           const dia = String(fecha.getUTCDate()).padStart(2, "0");
           const mes = String(fecha.getUTCMonth() + 1).padStart(2, "0");
@@ -134,13 +135,36 @@ export default async function openBrowser(data) {
             situacionActual,
             caratula,
             datosDeOrigen,
+
             updatedAt: updatedAt || "N/A",
           };
         }
+
         return null;
       });
       if (fieldsetData) {
-        resultados.push(fieldsetData);
+        const tableData = await page2.evaluate(() => {
+          // Seleccionamos las filas de la tabla
+          const rows = Array.from(document.querySelectorAll("#expediente\\:action-table tbody tr"));
+
+          if (rows.length > 0) {
+            // Solo tomamos la primera fila
+            const cells = rows[0].querySelectorAll("td");
+            let fecha = cells[2].innerText.trim();
+
+            // Usamos una expresión regular para extraer solo la fecha
+            const fechaLimpia = fecha.replace(/Fecha:\n?/, "").trim();
+            return fechaLimpia;
+          }
+
+          return null; // Si no hay filas, devolvemos null
+        });
+
+        if (tableData) {
+          // Solo guardamos el movimiento si encontramos una fecha
+          fieldsetData.ultimoMovimiento = tableData;
+          resultados.push(fieldsetData);
+        }
 
         await saveExpedienteToDB(fieldsetData); // Guardar en la base de datos
       }
