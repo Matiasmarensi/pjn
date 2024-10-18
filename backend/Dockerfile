@@ -1,7 +1,7 @@
 # Usa una imagen base adecuada
 FROM node:18
 
-# Instala dependencias del sistema necesarias para Puppeteer
+# Instala dependencias del sistema necesarias para Puppeteer y Chromium
 RUN apt-get update && apt-get install -y \
     wget \
     --no-install-recommends \
@@ -22,6 +22,9 @@ RUN apt-get update && apt-get install -y \
     libxtst6 \
     libxshmfence1 \
     fonts-noto-color-emoji \
+    libdrm2 \
+    libgbm-dev \
+    chromium \
     && rm -rf /var/lib/apt/lists/*
 
 # Establece el directorio de trabajo
@@ -37,4 +40,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando para ejecutar la aplicación
-CMD ["node", "server.js"]  # Cambia a tu archivo de entrada
+CMD ["node", "server.js"]

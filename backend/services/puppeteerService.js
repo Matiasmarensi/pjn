@@ -12,7 +12,11 @@ export default async function openBrowser(data) {
   const expedientes = data.split(",").map((item) => item.trim()); // Elimina espacios extra alrededor de cada expediente
 
   try {
-    const browser = await puppeteer.launch({ headless: true }, { args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      executablePath: "/usr/bin/chromium", // Asegúrate de que esta ruta sea correcta
+    });
     const page = await browser.newPage();
 
     // Navegar a la página de inicio
