@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import expedienteRoutes from "./routes/expedienteRoutes.js";
-import { connectDB } from "./db/connectDb.js";
+import { connectDB } from "./db/connectDB.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
