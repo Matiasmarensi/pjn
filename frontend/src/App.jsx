@@ -7,16 +7,31 @@ import "./App.css";
 
 function App() {
   const [inputValue, setInputValue] = useState("");
-  const { loading, result, initialData, handleSearch } = useFetchData("https://pjn-production.up.railway.app/run");
+  const { loading, result, initialData, handleSearch, cleanData } = useFetchData(
+    "https://pjn-production.up.railway.app/run"
+    //localhost
+    //"http://localhost:3000/run"
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
     handleSearch(inputValue);
+    setInputValue("");
   };
-
+  const handleCleanData = (e) => {
+    e.preventDefault();
+    cleanData();
+  };
+  //make it responsive
   return (
     <div className="flex h-screen bg-gray-800">
-      <SearchBar inputValue={inputValue} setInputValue={setInputValue} handleSubmit={handleSubmit} loading={loading} />
+      <SearchBar
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        handleSubmit={handleSubmit}
+        loading={loading}
+        handleCleanData={handleCleanData}
+      />
       <ResultsTable result={result} />
     </div>
   );

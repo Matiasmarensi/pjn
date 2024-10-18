@@ -14,7 +14,7 @@ const useFetchData = (initialUrl) => {
         throw new Error("Error en la respuesta del servidor");
       }
       const data = await response.json();
-      console.log(data);
+
       setInitialData(data);
       setResult(data);
     } catch (error) {
@@ -23,9 +23,23 @@ const useFetchData = (initialUrl) => {
       setLoading(false);
     }
   };
-
+  const cleanData = async () => {
+    // Remove from database with http route
+    try {
+      const response = await fetch(initialUrl, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Error al limpiar datos");
+      }
+      setResult([]);
+    } catch (error) {
+      console.error("Error al limpiar datos:", error);
+    }
+  };
   const handleSearch = async (inputValue) => {
     setLoading(true);
+
     try {
       const response = await fetch(initialUrl, {
         method: "POST",
@@ -54,7 +68,7 @@ const useFetchData = (initialUrl) => {
     fetchInitialData();
   }, [initialUrl]);
 
-  return { loading, result, initialData, handleSearch };
+  return { loading, result, initialData, handleSearch, cleanData };
 };
 
 export default useFetchData;
