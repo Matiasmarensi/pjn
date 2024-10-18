@@ -4,6 +4,7 @@ import openBrowser from "../services/puppeteerService.js";
 export const obtenerExpedientes = async (req, res) => {
   try {
     const expedientes = await getAllExpedientes();
+    console.log(expedientes);
     if (expedientes) {
       res.status(200).json(expedientes);
     } else {

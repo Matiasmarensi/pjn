@@ -14,6 +14,7 @@ const useFetchData = (initialUrl) => {
         throw new Error("Error en la respuesta del servidor");
       }
       const data = await response.json();
+      console.log(data);
       setInitialData(data);
       setResult(data);
     } catch (error) {

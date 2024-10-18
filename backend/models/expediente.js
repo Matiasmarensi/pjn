@@ -24,9 +24,8 @@ const expedienteSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    updatedAt: {
+    actualizado: {
       type: String,
-      default: Date.now,
     },
     ultimoMovimiento: { type: String },
   },

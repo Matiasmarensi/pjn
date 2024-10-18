@@ -14,7 +14,12 @@ export const saveExpedienteToDB = async (data) => {
     const existingExpediente = await Expediente.findOne({ expediente: data.expediente });
     if (existingExpediente) {
       existingExpediente.set(data);
-      existingExpediente.updatedAt = Date.now();
+      const fecha = new Date();
+      const dia = String(fecha.getUTCDate()).padStart(2, "0");
+      const mes = String(fecha.getUTCMonth() + 1).padStart(2, "0");
+      const anio = fecha.getUTCFullYear();
+      const updatedAt = `${dia}/${mes}/${anio}`; // Formato dd/mm/aaaa
+      existingExpediente.actualizado = updatedAt;
       await existingExpediente.save();
       console.log(`Expediente ${data.expediente} actualizado.`);
     } else {

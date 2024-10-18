@@ -135,8 +135,7 @@ export default async function openBrowser(data) {
             situacionActual,
             caratula,
             datosDeOrigen,
-
-            updatedAt: updatedAt || "N/A",
+            actualizado: updatedAt || "N/A",
           };
         }
 
@@ -165,9 +164,8 @@ export default async function openBrowser(data) {
           fieldsetData.ultimoMovimiento = tableData;
           resultados.push(fieldsetData);
         }
-
-        await saveExpedienteToDB(fieldsetData); // Guardar en la base de datos
       }
+      await saveExpedienteToDB(fieldsetData); // Guardar en la base de datos
 
       console.log("Datos extraídos del fieldset:", fieldsetData);
     }
