@@ -7,7 +7,7 @@ import "./App.css";
 
 function App() {
   const [inputValue, setInputValue] = useState("");
-  const { loading, result, initialData, handleSearch } = useFetchData("http://localhost:3000/run");
+  const { loading, result, initialData, handleSearch } = useFetchData("https://pjn-production.up.railway.app/run");
 
   const handleSubmit = (e) => {
     e.preventDefault();
