@@ -10,7 +10,7 @@ function App() {
   const { loading, result, initialData, handleSearch, cleanData } = useFetchData(
     "https://pjn-production.up.railway.app/run"
     //localhost
-    //"http://localhost:3000/run"
+    // "http://localhost:3000/run"
   );
 
   const handleSubmit = (e) => {

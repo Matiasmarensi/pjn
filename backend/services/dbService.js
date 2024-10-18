@@ -31,3 +31,11 @@ export const saveExpedienteToDB = async (data) => {
     console.error("Error guardando el expediente:", error);
   }
 };
+
+export const deleteAllExpedientes = async () => {
+  try {
+    await Expediente.deleteMany();
+  } catch (error) {
+    console.error("Error al eliminar los expedientes:", error);
+  }
+};

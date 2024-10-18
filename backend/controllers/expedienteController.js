@@ -1,10 +1,10 @@
-import { getAllExpedientes } from "../services/dbService.js";
+import { deleteAllExpedientes, getAllExpedientes } from "../services/dbService.js";
 import openBrowser from "../services/puppeteerService.js";
 
 export const obtenerExpedientes = async (req, res) => {
   try {
     const expedientes = await getAllExpedientes();
-    console.log(expedientes);
+
     if (expedientes) {
       res.status(200).json(expedientes);
     } else {
@@ -28,5 +28,15 @@ export const procesarExpedientes = async (req, res) => {
   } catch (error) {
     console.error("Error ejecutando Puppeteer:", error);
     res.status(500).json({ error: "Error ejecutando el script de Puppeteer" });
+  }
+};
+
+export const borrarExpedientes = async (req, res) => {
+  try {
+    await deleteAllExpedientes();
+    res.status(200).json({ message: "Expedientes borrados correctamente" });
+  } catch (error) {
+    console.error("Error ejecutando Puppeteer:", error);
+    res.status(500).json(error);
   }
 };

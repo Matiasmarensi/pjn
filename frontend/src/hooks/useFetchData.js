@@ -25,16 +25,25 @@ const useFetchData = (initialUrl) => {
   };
   const cleanData = async () => {
     // Remove from database with http route
+
     try {
+      //alerta para confirmar
+      const confirmed = window.confirm("¿Seguro que quieres borrar todos los expedientes?");
+      if (!confirmed) {
+        console.log("Eliminación cancelada");
+        return; // Salir de la función si el usuario canceló
+      }
       const response = await fetch(initialUrl, {
         method: "DELETE",
       });
+
       if (!response.ok) {
-        throw new Error("Error al limpiar datos");
+        throw new Error("Error en la respuesta del servidor");
       }
+
       setResult([]);
     } catch (error) {
-      console.error("Error al limpiar datos:", error);
+      console.log("Error al limpiar datos:", error);
     }
   };
   const handleSearch = async (inputValue) => {
