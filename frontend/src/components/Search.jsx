@@ -23,13 +23,15 @@ const SearchBar = ({ inputValue, setInputValue, handleSubmit, loading, handleCle
         <button
           type="button"
           onClick={formatInputValue}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg text-s px-5 py-3 transition duration-300"
+          className={`bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg text-s px-5 py-3 transition duration-300
+            ${loading ? "bg-gray-400 cursor-not-allowed" : ""}`}
         >
           Acomodar
         </button>
         <button
           onClick={handleSubmit}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-semibold rounded-lg text-s px-5 py-3 transition duration-300"
+          className={`bg-blue-500 hover:bg-blue-700 text-white font-semibold rounded-lg text-s px-5 py-3 transition duration-300
+            ${loading ? "bg-gray-400 cursor-not-allowed" : ""}`}
         >
           Buscar
         </button>

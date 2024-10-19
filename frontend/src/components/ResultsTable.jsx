@@ -59,7 +59,7 @@ const ResultsTable = ({ result }) => {
       >
         Exportar a Excel
       </button>
-      {result.length > 0 && (
+      {sortedResults.length > 0 && (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-gray-800 text-white rounded-lg shadow-md text-xs">
             <thead className="bg-blue-600">
@@ -78,7 +78,7 @@ const ResultsTable = ({ result }) => {
               </tr>
             </thead>
             <tbody className="bg-gray-700">
-              {result.map((item, index) => (
+              {sortedResults.map((item, index) => (
                 <tr key={item._id} className="hover:bg-gray-600 transition duration-200">
                   <td className="py-1 px-1 border-b border-gray-600 text-center">{index + 1}</td>
                   <td className="py-1 px-1 border-b border-gray-600 text-center">{item.expediente}</td>
