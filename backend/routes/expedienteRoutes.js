@@ -1,5 +1,6 @@
 import express from "express";
 import { obtenerExpedientes, procesarExpedientes, borrarExpedientes } from "../controllers/expedienteController.js";
+import { verificarSesion } from "../Middleware/verifySession.js";
 
 const router = express.Router();
 

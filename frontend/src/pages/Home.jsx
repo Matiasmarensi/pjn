@@ -9,9 +9,9 @@ import "../App.css";
 function Home() {
   const [inputValue, setInputValue] = useState("");
   const { loading, result, initialData, handleSearch, cleanData } = useFetchData(
-    "https://pjn-production.up.railway.app/run"
+    // "https://pjn-production.up.railway.app/run"
     //localhost
-    // "http://localhost:3000/run"
+    "http://localhost:3000/run"
   );
 
   const handleSubmit = (e) => {
