@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  const handleLogin = (credentials) => {
+    const authHeader = `Basic ${credentials}`;
+    localStorage.setItem("authHeader", authHeader); // Guardar en localStorage
+    console.log(authHeader);
+    navigate("/", { replace: true }); // Redirigir sin estado
   };
 
   return (

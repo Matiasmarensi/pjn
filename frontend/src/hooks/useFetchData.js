@@ -1,4 +1,3 @@
-// useFetchData.js
 import { useState, useEffect } from "react";
 
 const useFetchData = (initialUrl) => {
@@ -6,10 +5,23 @@ const useFetchData = (initialUrl) => {
   const [result, setResult] = useState([]);
   const [initialData, setInitialData] = useState([]);
 
+  const getAuthHeader = () => {
+    const email = localStorage.getItem("email");
+    const password = localStorage.getItem("password");
+
+    return `Basic ${btoa(`${email}:${password}`)}`;
+  };
+
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(initialUrl);
+      const headers = {
+        Authorization: getAuthHeader(),
+      };
+      console.log("Headers en fetchInitialData:", headers);
+
+      const response = await fetch(initialUrl, { headers });
+
       if (!response.ok) {
         throw new Error("Error en la respuesta del servidor");
       }
@@ -23,15 +35,13 @@ const useFetchData = (initialUrl) => {
       setLoading(false);
     }
   };
-  const cleanData = async () => {
-    // Remove from database with http route
 
+  const cleanData = async () => {
     try {
-      //alerta para confirmar
       const confirmed = window.confirm("¿Seguro que quieres borrar todos los expedientes?");
       if (!confirmed) {
         console.log("Eliminación cancelada");
-        return; // Salir de la función si el usuario canceló
+        return;
       }
       const response = await fetch(initialUrl, {
         method: "DELETE",
@@ -46,15 +56,20 @@ const useFetchData = (initialUrl) => {
       console.log("Error al limpiar datos:", error);
     }
   };
+
   const handleSearch = async (inputValue) => {
     setLoading(true);
 
     try {
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: getAuthHeader(),
+      };
+      console.log("Headers en handleSearch:", headers);
+
       const response = await fetch(initialUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({ data: inputValue }),
       });
 

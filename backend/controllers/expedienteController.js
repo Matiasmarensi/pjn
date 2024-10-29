@@ -21,6 +21,16 @@ export const procesarExpedientes = async (req, res) => {
   if (!data) {
     return res.status(400).json({ error: "Faltan parámetros: expediente o año." });
   }
+  const authHeader = req.headers["authorization"];
+  if (authHeader) {
+    // Decodificar Base64 para obtener email y password
+    const base64Credentials = authHeader.split(" ")[1];
+    const credentials = Buffer.from(base64Credentials, "base64").toString("utf8");
+    const [email, password] = credentials.split(":");
+
+    console.log("Email:", email);
+    console.log("Password:", password);
+  }
 
   try {
     const result = await openBrowser(data);
