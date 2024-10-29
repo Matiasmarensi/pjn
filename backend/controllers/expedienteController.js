@@ -18,20 +18,24 @@ export const obtenerExpedientes = async (req, res) => {
 
 export const procesarExpedientes = async (req, res) => {
   const { data } = req.body;
+  const { authorization } = req.headers;
+  console.log("Authorization:", authorization);
+
   if (!data) {
     return res.status(400).json({ error: "Faltan parámetros: expediente o año." });
   }
   const authHeader = req.headers["authorization"];
-  if (authHeader) {
-    // Decodificar Base64 para obtener email y password
-    const base64Credentials = authHeader.split(" ")[1];
+
+  console.log("AUTH", authHeader);
+  if (authorization && authorization.startsWith("Basic ")) {
+    const base64Credentials = authorization.split(" ")[1];
     const credentials = Buffer.from(base64Credentials, "base64").toString("utf8");
+    console.log(`Credentials: ${credentials}`);
     const [email, password] = credentials.split(":");
-
-    console.log("Email:", email);
-    console.log("Password:", password);
+    console.log(`Email: ${email}, Password: ${password}`);
+  } else {
+    return res.status(401).json({ error: "Encabezado de autorización no válido." });
   }
-
   try {
     const result = await openBrowser(data);
     res.json(result);

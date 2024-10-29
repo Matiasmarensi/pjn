@@ -6,10 +6,7 @@ const useFetchData = (initialUrl) => {
   const [initialData, setInitialData] = useState([]);
 
   const getAuthHeader = () => {
-    const email = localStorage.getItem("email");
-    const password = localStorage.getItem("password");
-
-    return `Basic ${btoa(`${email}:${password}`)}`;
+    return localStorage.getItem("authHeader");
   };
 
   const fetchInitialData = async () => {
@@ -18,7 +15,6 @@ const useFetchData = (initialUrl) => {
       const headers = {
         Authorization: getAuthHeader(),
       };
-      console.log("Headers en fetchInitialData:", headers);
 
       const response = await fetch(initialUrl, { headers });
 
@@ -59,13 +55,12 @@ const useFetchData = (initialUrl) => {
 
   const handleSearch = async (inputValue) => {
     setLoading(true);
-
     try {
       const headers = {
         "Content-Type": "application/json",
-        Authorization: getAuthHeader(),
+        Authorization: getAuthHeader(), // Obtén el encabezado de autorización
       };
-      console.log("Headers en handleSearch:", headers);
+      console.log("Headers en handleSearch:", headers); // Verifica que el encabezado sea una cadena
 
       const response = await fetch(initialUrl, {
         method: "POST",

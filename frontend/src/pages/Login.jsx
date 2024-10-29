@@ -6,10 +6,15 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (credentials) => {
+  const handleLogin = (e) => {
+    e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+
+    // Codificar email y password en Base64
+    const credentials = btoa(`${email}:${password}`);
     const authHeader = `Basic ${credentials}`;
     localStorage.setItem("authHeader", authHeader); // Guardar en localStorage
-    console.log(authHeader);
+    console.log(authHeader); // Debe mostrar algo como "Basic YWRtaW46cGFzc3dvcmQ="
+
     navigate("/", { replace: true }); // Redirigir sin estado
   };
 
