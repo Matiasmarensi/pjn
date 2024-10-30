@@ -19,29 +19,27 @@ export const obtenerExpedientes = async (req, res) => {
 export const procesarExpedientes = async (req, res) => {
   const { data } = req.body;
   const { authorization } = req.headers;
-  console.log("Authorization:", authorization);
 
-  if (!data) {
-    return res.status(400).json({ error: "Faltan parámetros: expediente o año." });
-  }
-  const authHeader = req.headers["authorization"];
-
-  console.log("AUTH", authHeader);
-  if (authorization && authorization.startsWith("Basic ")) {
-    const base64Credentials = authorization.split(" ")[1];
-    const credentials = Buffer.from(base64Credentials, "base64").toString("utf8");
-    console.log(`Credentials: ${credentials}`);
-    const [email, password] = credentials.split(":");
-    console.log(`Email: ${email}, Password: ${password}`);
-  } else {
-    return res.status(401).json({ error: "Encabezado de autorización no válido." });
-  }
   try {
-    const result = await openBrowser(data);
-    res.json(result);
+    if (!data) {
+      return res.status(400).json({ error: "Faltan parámetros: expediente o año." });
+    }
+    const authHeader = req.headers["authorization"];
+
+    if (authorization && authorization.startsWith("Basic ")) {
+      const base64Credentials = authorization.split(" ")[1];
+      const credentials = Buffer.from(base64Credentials, "base64").toString("utf8");
+
+      const [usuario, password] = credentials.split(":");
+      const result = await openBrowser(data, usuario, password);
+      res.json(result);
+    } else {
+      // return res.status(401).json({ error: "Encabezado de autorización no válido." });
+      throw new Error("Debe estar autenticado.");
+    }
   } catch (error) {
-    console.error("Error ejecutando Puppeteer:", error);
-    res.status(500).json({ error: "Error ejecutando el script de Puppeteer" });
+    console.log("No se encontró encabezado de autorización válido.");
+    return res.status(401).json(error.message);
   }
 };
 

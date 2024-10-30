@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -10,7 +10,7 @@ const Login = () => {
     e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
 
     // Codificar email y password en Base64
-    const credentials = btoa(`${email}:${password}`);
+    const credentials = btoa(`${usuario}:${password}`);
     const authHeader = `Basic ${credentials}`;
     localStorage.setItem("authHeader", authHeader); // Guardar en localStorage
     console.log(authHeader); // Debe mostrar algo como "Basic YWRtaW46cGFzc3dvcmQ="
@@ -25,10 +25,10 @@ const Login = () => {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Usuario PJN"
+            value={usuario}
+            onChange={(e) => setUsuario(e.target.value)}
             className="w-full px-4 py-2 text-sm text-gray-200 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
 
@@ -40,12 +40,6 @@ const Login = () => {
             className="w-full px-4 py-2 text-sm text-gray-200 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
 
-          <div className="flex justify-between items-center">
-            <Link to="/forgot-password" className="text-sm text-orange-400 hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-
           <button
             className="w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
             type="submit"
@@ -53,15 +47,6 @@ const Login = () => {
             Login
           </button>
         </form>
-
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-400">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-orange-400 hover:underline">
-              Sign up
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );

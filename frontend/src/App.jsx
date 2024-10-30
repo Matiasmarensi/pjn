@@ -3,16 +3,21 @@ import Login from "./pages/Login";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
     <div>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
-
-        {/* 
-        <Route path="*" element={<NotFound />} /> */}
       </Routes>
     </div>
   );

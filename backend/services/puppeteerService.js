@@ -4,10 +4,11 @@ import captcha from "puppeteer-extra-plugin-recaptcha";
 import "dotenv/config";
 import { saveExpedienteToDB } from "../services/dbService.js";
 
-const usuario = process.env.USUARIO_PJN;
-const password = process.env.PASSWORD;
+// const usuario = process.env.USUARIO_PJN;
+// const password = process.env.PASSWORD;
 
-export default async function openBrowser(data) {
+export default async function openBrowser(data, usuario, password) {
+  console.log("DATAAAA," + data);
   // Separar la data en múltiples expedientes en formato xxxx/yyyy
   const expedientes = data.split(",").map((item) => item.trim()); // Elimina espacios extra alrededor de cada expediente
 
@@ -15,7 +16,7 @@ export default async function openBrowser(data) {
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      executablePath: "/usr/bin/chromium", // Asegúrate de que esta ruta sea correcta
+      // executablePath: "/usr/bin/chromium", // Asegúrate de que esta ruta sea correcta
     });
     const page = await browser.newPage();
 
@@ -72,6 +73,7 @@ export default async function openBrowser(data) {
         await page2.click(escapedSelector); // Usamos el selector escapado para hacer clic
       } else {
         console.log("No se encontró el botón de Nueva Consulta");
+        throw new Error("usuario no válido"); // Lanza el error
       }
 
       // Limpiar los inputs antes de la nueva consulta

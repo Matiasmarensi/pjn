@@ -60,7 +60,10 @@ const useFetchData = (initialUrl) => {
         "Content-Type": "application/json",
         Authorization: getAuthHeader(), // Obtén el encabezado de autorización
       };
-      console.log("Headers en handleSearch:", headers); // Verifica que el encabezado sea una cadena
+      if (!headers) {
+        // Muestra el mensaje específico para error de autenticación
+        alert(errorData.error || "Debe estar autenticado");
+      }
 
       const response = await fetch(initialUrl, {
         method: "POST",
@@ -69,7 +72,15 @@ const useFetchData = (initialUrl) => {
       });
 
       if (!response.ok) {
-        throw new Error("Error en la respuesta del servidor");
+        const errorData = await response.json();
+        console.log(response);
+        if (response.status === 401) {
+          // Muestra el mensaje específico para error de autenticación
+          alert(errorData.error || "Debe estar autenticado");
+        } else {
+          throw new Error(errorData.error || "Error en la respuesta del servidor");
+        }
+        return; // Termina la función en caso de error
       }
 
       const text = await response.text();
