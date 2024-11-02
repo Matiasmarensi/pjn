@@ -1,12 +1,8 @@
 import puppeteer from "puppeteer-extra";
-import ExcelJS from "exceljs";
-import captcha from "puppeteer-extra-plugin-recaptcha";
 import "dotenv/config";
 import { saveExpedienteToDB } from "../services/dbService.js";
 
 export default async function openBrowser(data, usuario, password) {
-  console.log("DATAAAA," + data);
-
   const expedientes = data.split(",").map((item) => item.trim());
 
   try {
@@ -16,148 +12,88 @@ export default async function openBrowser(data, usuario, password) {
     });
     const page = await browser.newPage();
 
+    // Iniciar sesión
     await page.goto("https://deox.pjn.gov.ar/deox/inicio.do");
-    console.log("Navegando a la página de inicio...");
-
     await page.waitForSelector("#username");
-    console.log("Input de usuario encontrado.");
     await page.type("#username", usuario);
     await page.type("#password", password);
-    console.log("Credenciales ingresadas.");
-
-    const loginButton = await page.waitForSelector("#kc-login");
-    await loginButton.click();
-    console.log("Botón de inicio de sesión clickeado.");
-
+    await page.click("#kc-login");
     await page.waitForNavigation({ waitUntil: "networkidle0" });
-    console.log("Inicio de sesión completado.");
 
-    const resultados = await Promise.all(
-      expedientes.map(async (item) => {
+    // Procesar en bloques de 5 expedientes para evitar sobrecarga
+    const blockSize = 5;
+    for (let i = 0; i < expedientes.length; i += blockSize) {
+      const currentBlock = expedientes.slice(i, i + blockSize);
+      for (const item of currentBlock) {
         const [expediente, anio] = item.split("/").map((part) => part.trim());
+
+        // Verificar el formato
         if (!expediente || !anio) {
-          console.log("Error: formato de expediente inválido.");
-          return null;
+          console.log("Formato de expediente inválido.");
+          continue;
         }
 
-        const page2 = await browser.newPage();
-        await page2.goto("http://scw.pjn.gov.ar/scw/consultaListaRelacionados.seam");
+        await page.goto("http://scw.pjn.gov.ar/scw/consultaListaRelacionados.seam");
 
-        console.log(`Procesando expediente: ${expediente}, año: ${anio}`);
-
-        // Intentar encontrar el botón "Nueva Consulta" y hacer clic
-        const nuevaConsultaSelector = await page2.evaluate(() => {
+        // Realizar la consulta
+        await page.evaluate(() => {
           const buttons = Array.from(document.querySelectorAll("a"));
-          const button = buttons.find((button) => button.textContent.includes("Nueva Consulta"));
-          return button ? button.getAttribute("id") : null;
+          const button = buttons.find((b) => b.textContent.includes("Nueva Consulta"));
+          if (button) button.click();
         });
 
-        if (nuevaConsultaSelector) {
-          const escapedSelector = `#${nuevaConsultaSelector.replace(/:/g, "\\:")}`;
-          await page2.click(escapedSelector);
-        } else {
-          console.log("No se encontró el botón de Nueva Consulta");
-          await page2.close();
-          return null;
-        }
+        // Esperar el dropdown y seleccionarlo
+        await page.waitForSelector("#formPublica\\:camaraNumAni", { timeout: 5000 });
+        await page.select("#formPublica\\:camaraNumAni", "10");
 
-        // Esperar a que aparezca el selector de cámara
+        // Ingresar datos de expediente y año
+        await page.type("#formPublica\\:numero", expediente);
+        await page.type("#formPublica\\:anio", anio);
 
-        const selectSelector = "#formPublica\\:camaraNumAni";
-        try {
-          await page2.waitForSelector(selectSelector, { timeout: 5000 });
-          await page2.select(selectSelector, "10");
-          console.log("Opción seleccionada en el dropdown.");
-        } catch (error) {
-          console.log(`Error al seleccionar el dropdown: ${error.message}`);
-          await page2.close();
-          return null;
-        }
-
-        // Ingresar el expediente y año
-        const inputNum = await page2.waitForSelector("#formPublica\\:numero");
-        await inputNum.type(expediente);
-        console.log("Input de número ingresado.");
-
-        const inputAni = await page2.waitForSelector("#formPublica\\:anio");
-        await inputAni.type(anio);
-        console.log("Input de año ingresado.");
-
-        const consultarButtonSelector = "#formPublica\\:buscarPorNumeroButton";
-        const consultarButton = await page2.waitForSelector(consultarButtonSelector);
-        await consultarButton.click();
-        console.log("Botón de consulta clickeado.");
+        // Iniciar la búsqueda
+        await page.click("#formPublica\\:buscarPorNumeroButton");
 
         try {
-          await page2.waitForSelector("#expediente\\:j_idt90\\:j_idt91", { timeout: 10000 });
-        } catch (err) {
-          console.log(`El expediente ${expediente}/${anio} no se encontró.`);
-          await page2.close();
-          return null;
-        }
+          await page.waitForSelector("#expediente\\:j_idt90\\:j_idt91", { timeout: 10000 });
 
-        const fieldsetData = await page2.evaluate(() => {
-          const expediente = document.querySelector("#expediente\\:j_idt90\\:j_idt91");
-          if (!expediente) return null;
-
-          const expedienteValue = expediente.querySelector('span[style="color:#000000;"]')?.innerText?.trim() || "N/A";
-          const jurisdiccion =
-            document.querySelector("#expediente\\:j_idt90\\:detailCamera")?.innerText?.trim() || "N/A";
-          const dependencia =
-            document.querySelector("#expediente\\:j_idt90\\:detailDependencia")?.innerText?.trim() || "N/A";
-          const situacionActual =
-            document.querySelector("#expediente\\:j_idt90\\:detailSituation")?.innerText?.trim() || "N/A";
-          const caratula = document.querySelector("#expediente\\:j_idt90\\:detailCover")?.innerText?.trim() || "N/A";
-          const datosDeOrigen =
-            document.querySelector("#expediente\\:j_idt90\\:j_idt123\\:detailNumeracionOrigen")?.innerText?.trim() ||
-            "N/A";
-
-          const fecha = new Date();
-          const dia = String(fecha.getUTCDate()).padStart(2, "0");
-          const mes = String(fecha.getUTCMonth() + 1).padStart(2, "0");
-          const anio = fecha.getUTCFullYear();
-          const updatedAt = `${dia}/${mes}/${anio}`;
-
-          return {
-            expediente: expedienteValue,
-            jurisdiccion,
-            dependencia,
-            situacionActual,
-            caratula,
-            datosDeOrigen,
-            actualizado: updatedAt || "N/A",
-          };
-        });
-
-        if (fieldsetData) {
-          const tableData = await page2.evaluate(() => {
-            const rows = Array.from(document.querySelectorAll("#expediente\\:action-table tbody tr"));
-            if (rows.length > 0) {
-              const cells = rows[0].querySelectorAll("td");
-              let fecha = cells[2].innerText.trim();
-              const fechaLimpia = fecha.replace(/Fecha:\n?/, "").trim();
-              return fechaLimpia;
-            }
-            return null;
+          const fieldsetData = await page.evaluate(() => {
+            const expedienteElem = document.querySelector(
+              "#expediente\\:j_idt90\\:j_idt91 span[style='color:#000000;']"
+            );
+            return {
+              expediente: expedienteElem?.innerText.trim() || "N/A",
+              jurisdiccion: document.querySelector("#expediente\\:j_idt90\\:detailCamera")?.innerText.trim() || "N/A",
+              dependencia:
+                document.querySelector("#expediente\\:j_idt90\\:detailDependencia")?.innerText.trim() || "N/A",
+              situacionActual:
+                document.querySelector("#expediente\\:j_idt90\\:detailSituation")?.innerText.trim() || "N/A",
+              caratula: document.querySelector("#expediente\\:j_idt90\\:detailCover")?.innerText.trim() || "N/A",
+              datosDeOrigen:
+                document.querySelector("#expediente\\:j_idt90\\:j_idt123\\:detailNumeracionOrigen")?.innerText.trim() ||
+                "N/A",
+              actualizado: new Date().toLocaleDateString("es-AR"),
+            };
           });
 
-          if (tableData) {
-            fieldsetData.ultimoMovimiento = tableData;
+          // Guardar en DB
+          if (fieldsetData) {
+            fieldsetData.ultimoMovimiento = await page.evaluate(() => {
+              const rows = document.querySelectorAll("#expediente\\:action-table tbody tr");
+              return rows.length > 0 ? rows[0].querySelector("td:nth-child(3)")?.innerText.trim() : null;
+            });
             await saveExpedienteToDB(fieldsetData);
           }
+        } catch (error) {
+          console.log(`Expediente ${expediente}/${anio} no encontrado o error en la búsqueda.`);
         }
-
-        await page2.close();
-        return fieldsetData;
-      })
-    );
-
+      }
+    }
     await browser.close();
-    return resultados.filter(Boolean); // Devuelve solo los resultados válidos
   } catch (error) {
     console.log("Error:", error);
   }
 }
+
 // import puppeteer from "puppeteer-extra";
 // import ExcelJS from "exceljs";
 // import captcha from "puppeteer-extra-plugin-recaptcha";
