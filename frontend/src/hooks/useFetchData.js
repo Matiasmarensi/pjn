@@ -25,6 +25,7 @@ const useFetchData = (initialUrl) => {
 
       setInitialData(data);
       setResult(data);
+      console.log(initialData);
     } catch (error) {
       console.error("Error al obtener datos iniciales:", error);
     } finally {

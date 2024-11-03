@@ -7,7 +7,7 @@ export default async function openBrowser(data, usuario, password) {
 
   try {
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
@@ -60,6 +60,12 @@ export default async function openBrowser(data, usuario, password) {
             const expedienteElem = document.querySelector(
               "#expediente\\:j_idt90\\:j_idt91 span[style='color:#000000;']"
             );
+            const fecha = new Date();
+            const dia = String(fecha.getUTCDate()).padStart(2, "0");
+            const mes = String(fecha.getUTCMonth() + 1).padStart(2, "0");
+            const anio = fecha.getUTCFullYear();
+            const updatedAt = `${dia}/${mes}/${anio}`; // Formato dd/mm/aaaa
+
             return {
               expediente: expedienteElem?.innerText.trim() || "N/A",
               jurisdiccion: document.querySelector("#expediente\\:j_idt90\\:detailCamera")?.innerText.trim() || "N/A",
@@ -71,7 +77,7 @@ export default async function openBrowser(data, usuario, password) {
               datosDeOrigen:
                 document.querySelector("#expediente\\:j_idt90\\:j_idt123\\:detailNumeracionOrigen")?.innerText.trim() ||
                 "N/A",
-              actualizado: new Date().toLocaleDateString("es-AR"),
+              actualizado: updatedAt || "N/A",
             };
           });
 
@@ -79,8 +85,14 @@ export default async function openBrowser(data, usuario, password) {
           if (fieldsetData) {
             fieldsetData.ultimoMovimiento = await page.evaluate(() => {
               const rows = document.querySelectorAll("#expediente\\:action-table tbody tr");
-              return rows.length > 0 ? rows[0].querySelector("td:nth-child(3)")?.innerText.trim() : null;
+              if (rows.length > 0) {
+                const fechaTexto = rows[0].querySelector("td:nth-child(3)")?.innerText.trim();
+                // Limpiar el texto para eliminar "Fecha:" y obtener solo la fecha
+                return fechaTexto ? fechaTexto.replace(/Fecha:\n?/, "").trim() : null;
+              }
+              return null;
             });
+
             await saveExpedienteToDB(fieldsetData);
           }
         } catch (error) {
