@@ -87,7 +87,7 @@ const useFetchData = (initialUrl) => {
       const text = await response.text();
       const data = text ? JSON.parse(text) : null;
 
-      setResult(data ? [...initialData, ...data] : initialData);
+      setResult(data ? [...initialData, ...data] : [...initialData]);
     } catch (error) {
       console.error("Error en la búsqueda:", error);
     } finally {
