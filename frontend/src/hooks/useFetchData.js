@@ -25,7 +25,6 @@ const useFetchData = (initialUrl) => {
 
       setInitialData(data);
       setResult(data);
-      console.log(initialData);
     } catch (error) {
       console.error("Error al obtener datos iniciales:", error);
     } finally {
@@ -59,11 +58,11 @@ const useFetchData = (initialUrl) => {
     try {
       const headers = {
         "Content-Type": "application/json",
-        Authorization: getAuthHeader(), // Obtén el encabezado de autorización
+        Authorization: getAuthHeader(),
       };
-      if (!headers) {
-        // Muestra el mensaje específico para error de autenticación
-        alert(errorData.error || "Debe estar autenticado");
+      if (!headers.Authorization) {
+        alert("Debe estar autenticado");
+        return;
       }
 
       const response = await fetch(initialUrl, {
@@ -74,20 +73,20 @@ const useFetchData = (initialUrl) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(response);
         if (response.status === 401) {
-          // Muestra el mensaje específico para error de autenticación
           alert(errorData.error || "Debe estar autenticado");
         } else {
           throw new Error(errorData.error || "Error en la respuesta del servidor");
         }
-        return; // Termina la función en caso de error
+        return;
       }
 
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
+      const data = await response.json();
 
-      setResult(data ? [...initialData, ...data] : [...initialData]);
+      // Actualizar initialData y result para reflejar los expedientes procesados
+      const updatedData = Array.isArray(data) ? [...initialData, ...data] : initialData;
+      setInitialData(updatedData);
+      setResult(updatedData);
     } catch (error) {
       console.error("Error en la búsqueda:", error);
     } finally {

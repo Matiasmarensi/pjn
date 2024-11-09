@@ -32,7 +32,7 @@ export const procesarExpedientes = async (req, res) => {
 
       const [usuario, password] = credentials.split(":");
       const result = await openBrowser(data, usuario, password);
-      res.json(result);
+      res.status(200).json({ message: "Procesamiento completado", expedientes: result });
     } else {
       // return res.status(401).json({ error: "Encabezado de autorización no válido." });
       throw new Error("Debe estar autenticado.");
