@@ -44,7 +44,11 @@ export const procesarExpedientes = async (req, res) => {
 };
 
 export const borrarExpedientes = async (req, res) => {
+  const id = req.params._id;
   try {
+    if (id) {
+      console.log(id);
+    }
     await deleteAllExpedientes();
     res.status(200).json({ message: "Expedientes borrados correctamente" });
   } catch (error) {

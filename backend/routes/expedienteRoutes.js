@@ -7,5 +7,6 @@ const router = express.Router();
 router.get("/", obtenerExpedientes);
 router.post("/", procesarExpedientes);
 router.delete("/", borrarExpedientes);
+router.delete("/:_id", borrarExpedientes);
 
 export default router;
